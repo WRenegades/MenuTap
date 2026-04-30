@@ -1,0 +1,61 @@
+<view class="page">
+  <!-- 权限检查 -->
+  <view class="no-permission" wx:if="{{!hasPermission}}">
+    <text class="no-perm-icon">🔒</text>
+    <text class="no-perm-text">无权限访问</text>
+  </view>
+
+  <block wx:else>
+    <view class="header-bar">
+      <text class="page-title">分类管理（{{categories.length}}）</text>
+      <button class="add-btn" bindtap="onAddCategory">+ 新增分类</button>
+    </view>
+
+    <scroll-view class="cat-list" scroll-y="{{true}}">
+      <view wx:for="{{categories}}" wx:key="_id" class="cat-item">
+        <view class="cat-icon">{{item.icon || '📦'}}</view>
+        <view class="cat-info">
+          <text class="cat-name">{{item.name}}</text>
+          <text class="cat-meta">排序: {{item.sort}} | {{item.enabled ? '启用' : '禁用'}}</text>
+        </view>
+        <view class="cat-actions">
+          <view class="action-btn edit" bindtap="onEditCategory" data-cat="{{item}}">编辑</view>
+          <view class="action-btn del" bindtap="onDeleteCategory" data-id="{{item._id}}">删除</view>
+        </view>
+      </view>
+      <view class="empty-text" wx:if="{{categories.length == 0}}">暂无分类，点击上方新增</view>
+    </scroll-view>
+
+    <!-- 编辑弹窗 -->
+    <view class="modal-overlay {{showForm ? 'show' : ''}}" bindtap="onCloseForm">
+      <view class="form-panel" catchtap="noop">
+        <text class="form-title">{{editMode == 'edit' ? '编辑分类' : '新增分类'}}</text>
+
+        <view class="form-group">
+          <text class="form-label">分类名称 *</text>
+          <input class="form-input" value="{{form.name}}" bindinput="onFormInput" data-key="name" placeholder="如：主食" />
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">图标（emoji）</text>
+          <input class="form-input" value="{{form.icon}}" bindinput="onFormInput" data-key="icon" placeholder="🍚" />
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">排序值</text>
+          <input class="form-input" value="{{form.sort}}" bindinput="onFormInput" data-key="sort" placeholder="1" type="number" />
+        </view>
+
+        <view class="form-group switch-group">
+          <text class="form-label">启用</text>
+          <switch checked="{{form.enabled != false}}" bindchange="onFormEnabled" />
+        </view>
+
+        <view class="form-btns">
+          <button class="btn-cancel" bindtap="onCloseForm">取消</button>
+          <button class="btn-save" bindtap="onSaveCategory">保存</button>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

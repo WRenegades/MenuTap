@@ -1,0 +1,181 @@
+<view class="admin-page">
+  <!-- 权限检查 -->
+  <view class="no-permission" wx:if="{{!hasPermission}}">
+    <text class="no-perm-icon">🔒</text>
+    <text class="no-perm-text">无权限访问</text>
+    <text class="no-perm-hint">请将你的 OpenID 添加到数据库 admins 集合中</text>
+    <view class="openid-box" wx:if="{{myOpenid}}">
+      <text class="openid-label">你的 OpenID</text>
+      <text class="openid-value selectable">{{myOpenid}}</text>
+      <button class="copy-btn" bindtap="onCopyOpenid" data-openid="{{myOpenid}}">复制 OpenID</button>
+    </view>
+    <button class="back-home-btn" bindtap="onBackHome">返回首页</button>
+  </view>
+
+  <block wx:else>
+    <!-- 顶部选项卡 -->
+    <view class="admin-tabs">
+      <view wx:for="{{tabs}}" wx:key="value"
+        class="tab-item {{activeTab == item.value ? 'active' : ''}}"
+        bindtap="onSwitchTab" data-value="{{item.value}}">
+        {{item.label}}
+      </view>
+    </view>
+
+    <!-- ==== Tab: 概览 ==== -->
+    <view class="tab-content" wx:if="{{activeTab == 'dashboard'}}">
+      <view class="stat-grid">
+        <view class="stat-card">
+          <text class="stat-num">{{dashboard.totalOrders || 0}}</text>
+          <text class="stat-label">总订单</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-num highlight">{{dashboard.newOrders || 0}}</text>
+          <text class="stat-label">新订单</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-num">{{dashboard.totalDishes || 0}}</text>
+          <text class="stat-label">菜品数</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-num">{{dashboard.totalCategories || 0}}</text>
+          <text class="stat-label">分类数</text>
+        </view>
+      </view>
+
+      <view class="section-card">
+        <text class="section-title">最近订单</text>
+        <view wx:for="{{dashboard.recentOrders || []}}" wx:key="_id" class="recent-order-item" bindtap="onViewOrder" data-id="{{item._id}}">
+          <text class="recent-order-no">{{item.orderNo}}</text>
+          <text class="recent-order-status {{item.status}}">{{item.statusText}}</text>
+        </view>
+        <view class="empty-text" wx:if="{{!dashboard.recentOrders || dashboard.recentOrders.length == 0}}">暂无订单</view>
+      </view>
+
+      <view class="quick-links">
+        <view class="link-item" bindtap="onNavigate" data-url="/pages/admin/dishes/index">
+          <text>🍽️ 菜品管理</text>
+        </view>
+        <view class="link-item" bindtap="onNavigate" data-url="/pages/admin/categories/index">
+          <text>📂 分类管理</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ==== Tab: 订单 ==== -->
+    <view class="tab-content" wx:if="{{activeTab == 'orders'}}">
+      <view class="order-filter">
+        <view wx:for="{{orderFilters}}" wx:key="value"
+          class="filter-item {{orderFilter == item.value ? 'active' : ''}}"
+          bindtap="onFilterOrder" data-value="{{item.value}}">
+          {{item.label}}
+        </view>
+      </view>
+
+      <view wx:for="{{orderList}}" wx:key="_id" class="order-card" bindtap="onViewOrder" data-id="{{item._id}}">
+        <view class="order-card-header">
+          <text class="order-card-no">{{item.orderNo}}</text>
+          <text class="order-card-status {{item.status}}">{{item.statusText}}</text>
+        </view>
+        <view class="order-card-body">
+          <text class="order-card-items">{{item.dishNamesText || ''}}</text>
+        </view>
+        <view class="order-card-footer">
+          <text class="order-card-time">{{formatTime(item.createdAt)}}</text>
+        </view>
+      </view>
+
+      <view class="empty-text" wx:if="{{orderList.length == 0}}">暂无订单</view>
+    </view>
+
+    <!-- ==== Tab: 配置 ==== -->
+    <view class="tab-content" wx:if="{{activeTab == 'config'}}">
+      <view class="config-form">
+        <view class="form-group">
+          <text class="form-label">主题色</text>
+          <input class="form-input" value="{{formConfig.themeColor}}" bindinput="onConfigInput" data-key="themeColor" placeholder="#FF6B81" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">欢迎文案</text>
+          <input class="form-input" value="{{formConfig.welcomeText}}" bindinput="onConfigInput" data-key="welcomeText" placeholder="亲爱的，今天想吃什么呀～" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">管理员通知模板 ID（日程提醒 fH8h-...）</text>
+          <input class="form-input" value="{{formConfig.subscriptionTemplateId}}" bindinput="onConfigInput" data-key="subscriptionTemplateId" placeholder="fH8h-R4xBcbl6Q8Cced4LvSzGNsPky3Cx6qqf5jpgmI" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">用户确认模板 ID（点餐成功通知 APlIC-...）</text>
+          <input class="form-input" value="{{formConfig.userSubscriptionTemplateId}}" bindinput="onConfigInput" data-key="userSubscriptionTemplateId" placeholder="APlICYu1A_t5Ie-Gq8ABIv5vonSruD9fxEk68S-neV8" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">首页背景图</text>
+          <button class="upload-btn" bindtap="onUploadBg">选择图片</button>
+          <image class="preview-img" src="{{formConfig.backgroundImage}}" mode="aspectFill" wx:if="{{formConfig.backgroundImage}}"></image>
+        </view>
+        <view class="form-group">
+          <text class="form-label">推荐菜品（按住 Ctrl 多选，暂用文字输入菜品 ID，逗号分隔）</text>
+          <input class="form-input" value="{{recommendedIdsText}}" bindinput="onRecommendedInput" placeholder="菜品ID, 用逗号分隔" />
+        </view>
+        <view class="form-group switch-group">
+          <text class="form-label">显示价格</text>
+          <switch checked="{{formConfig.showPrice != false}}" bindchange="onTogglePrice" />
+        </view>
+        <button class="save-btn" bindtap="onSaveConfig">保存配置</button>
+      </view>
+    </view>
+
+    <!-- ==== Tab: 订阅消息 ==== -->
+    <view class="tab-content" wx:if="{{activeTab == 'subscription'}}">
+      <view class="subscription-card">
+        <text class="sub-title">📬 新订单通知</text>
+        <text class="sub-desc">开启后，当用户提交新订单时，你将通过微信服务通知收到提醒。</text>
+        <text class="sub-note">注意：需要先在微信公众平台配置订阅消息模板，并将模板 ID 填入「配置」页。</text>
+        <button class="sub-btn" wx:if="{{!subscribed}}" bindtap="onRequestSubscribe">开启订单提醒</button>
+        <view class="sub-status" wx:else>
+          <text class="sub-on">✅ 已开启订单提醒</text>
+          <button class="sub-btn secondary" bindtap="onRequestSubscribe">重新授权</button>
+        </view>
+      </view>
+    </view>
+
+    <!-- ==== Tab: 设置 ==== -->
+    <view class="tab-content" wx:if="{{activeTab == 'setup'}}">
+      <view class="setup-card">
+        <text class="setup-title">🔑 管理员管理</text>
+        <text class="setup-label">我的 OpenID</text>
+        <view class="setup-field">
+          <text class="setup-value selectable">{{myOpenid}}</text>
+          <button class="copy-btn" bindtap="onCopyOpenid">复制</button>
+        </view>
+
+        <view class="add-admin-section">
+          <text class="setup-subtitle">添加管理员</text>
+          <input class="form-input" placeholder="输入对方的 OpenID" value="{{newAdminOpenid}}" bindinput="onNewAdminInput" />
+          <input class="form-input" placeholder="备注名称（可选）" value="{{newAdminName}}" bindinput="onNewAdminNameInput" />
+          <button class="add-admin-btn" bindtap="onAddAdmin">添加</button>
+        </view>
+
+        <view class="admin-list-section">
+          <text class="setup-subtitle">当前管理员列表</text>
+          <view wx:for="{{adminList}}" wx:key="_id" class="admin-item">
+            <text class="admin-item-openid">{{item.openid}}</text>
+            <text class="admin-item-name">{{item.name || '未命名'}}</text>
+          </view>
+          <view class="empty-text" wx:if="{{adminList.length == 0}}">暂无其他管理员</view>
+        </view>
+      </view>
+
+      <view class="setup-card">
+        <text class="setup-title">🚀 导入演示数据</text>
+        <text class="setup-desc">重建分类和菜品数据。管理员权限不受影响。</text>
+        <button class="init-btn" bindtap="onImportDemoData">导入演示数据</button>
+      </view>
+
+      <view class="setup-card">
+        <text class="setup-title">🖼️ 上传菜品图片到云存储</text>
+        <text class="setup-desc">将可用菜品图片上传到云存储并更新数据库。缺少的图片需手动上传到云存储 dish_images/ 目录。</text>
+        <button class="init-btn" bindtap="onUpdateDishImages">更新菜品图片</button>
+      </view>
+    </view>
+  </block>
+</view>

@@ -1,0 +1,86 @@
+<view class="detail-page">
+  <!-- 菜品详情模式 -->
+  <block wx:if="{{pageType == 'dish' && dish}}">
+    <view class="dish-detail">
+      <image class="dish-banner" src="{{dish.image}}" mode="aspectFill" wx:if="{{dish.image}}"></image>
+      <view class="dish-banner-placeholder" wx:else>
+        <text class="banner-icon">🍽️</text>
+      </view>
+      <view class="dish-body">
+        <text class="dish-title">{{dish.name}}</text>
+        <text class="dish-desc">{{dish.description}}</text>
+        <text class="dish-price" wx:if="{{dish.price}}">¥{{dish.price}}</text>
+
+        <view class="info-section" wx:if="{{dish.mainIngredients}}">
+          <text class="section-label">🥬 主要配料</text>
+          <text class="section-text">{{dish.mainIngredients}}</text>
+        </view>
+
+        <view class="info-section" wx:if="{{dish.steps}}">
+          <text class="section-label">👩‍🍳 做法步骤</text>
+          <text class="section-text">{{dish.steps}}</text>
+        </view>
+
+        <view class="info-section" wx:if="{{dish.flavorSuggestion}}">
+          <text class="section-label">💡 口味建议</text>
+          <text class="section-text">{{dish.flavorSuggestion}}</text>
+        </view>
+
+        <view class="info-section">
+          <text class="section-label">📝 备注说明</text>
+          <text class="section-text">可选口味：正常、微辣、酱香</text>
+          <text class="section-text">可选香菜：放香菜、不放香菜</text>
+        </view>
+
+        <button class="back-btn" bindtap="onBack">返回菜单</button>
+      </view>
+    </view>
+  </block>
+
+  <!-- 订单详情模式 -->
+  <block wx:else>
+    <view class="order-status-bar" wx:if="{{order}}">
+      <text class="status-icon">{{statusIcon}}</text>
+      <view class="status-info">
+        <text class="status-text">{{order.statusText}}</text>
+        <text class="status-time">{{formatTime(order.createdAt)}}</text>
+      </view>
+    </view>
+
+    <view class="order-items" wx:if="{{order && order.items}}">
+      <view wx:for="{{order.items}}" wx:key="index" class="order-item">
+        <image class="item-img" src="{{item.image}}" mode="aspectFill" wx:if="{{item.image}}"></image>
+        <view class="item-img-placeholder" wx:else>🍽️</view>
+        <view class="item-info">
+          <text class="item-name">{{item.dishName}}</text>
+          <text class="item-spec">
+            <text wx:if="{{item.temperature}}">{{flavorMap[item.flavor] || item.flavor}} | {{temperatureMap[item.temperature] || item.temperature}}</text>
+            <text wx:else>{{flavorMap[item.flavor] || item.flavor}} | {{item.coriander ? '放香菜' : '不放香菜'}}</text>
+          </text>
+          <text class="item-remark" wx:if="{{item.remark}}">备注：{{item.remark}}</text>
+        </view>
+        <text class="item-qty">x{{item.quantity}}</text>
+      </view>
+    </view>
+
+    <view class="order-footer" wx:if="{{order}}">
+      <view class="order-no">订单号：{{order.orderNo}}</view>
+      <view class="order-total" wx:if="{{order.totalPrice > 0}}">合计：¥{{order.totalPrice}}</view>
+    </view>
+
+    <!-- 管理员操作 -->
+    <view class="admin-actions" wx:if="{{isAdmin && pageType == 'order'}}">
+      <view class="action-title">管理员操作</view>
+      <view class="action-btns">
+        <button class="action-btn" wx:for="{{adminActions}}" wx:key="value"
+          data-status="{{item.value}}"
+          disabled="{{order.status == item.value}}"
+          bindtap="onUpdateStatus">
+          {{item.label}}
+        </button>
+      </view>
+    </view>
+
+    <view class="empty-tip" wx:if="{{!order && pageType == 'order'}}">加载中...</view>
+  </block>
+</view>

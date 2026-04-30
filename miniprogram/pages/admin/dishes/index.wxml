@@ -1,0 +1,114 @@
+<view class="page">
+  <!-- 权限检查 -->
+  <view class="no-permission" wx:if="{{!hasPermission}}">
+    <text class="no-perm-icon">🔒</text>
+    <text class="no-perm-text">无权限访问</text>
+  </view>
+
+  <block wx:else>
+    <!-- 列表模式 -->
+    <view class="header-bar">
+      <text class="page-title">菜品列表（{{dishList.length}}）</text>
+      <button class="add-btn" bindtap="onAddDish">+ 新增菜品</button>
+    </view>
+
+    <view class="search-bar">
+      <input class="search-input" placeholder="搜索菜品名称..." bindinput="onSearch" />
+    </view>
+
+    <scroll-view class="dish-list" scroll-y="{{true}}">
+      <view wx:for="{{dishList}}" wx:key="_id" class="dish-item">
+        <view class="dish-media">
+          <image class="dish-thumb" src="{{item.image}}" mode="aspectFill" wx:if="{{item.image}}"></image>
+          <view class="dish-thumb-placeholder" wx:else>🍽️</view>
+        </view>
+        <view class="dish-content">
+          <view class="dish-name-row">
+            <text class="dish-name">{{item.name}}</text>
+            <text class="dish-status {{item.enabled ? 'on' : 'off'}}">{{item.enabled ? '上架' : '下架'}}</text>
+          </view>
+          <text class="dish-category">{{item.categoryName || '未分类'}}</text>
+          <text class="dish-price">¥{{item.price}} | 已点 {{item.orderCount || 0}} 次</text>
+        </view>
+        <view class="dish-actions">
+          <view class="action-btn edit" bindtap="onEditDish" data-dish="{{item}}">编辑</view>
+          <view class="action-btn toggle {{item.enabled ? 'off' : 'on'}}"
+            bindtap="onToggleDish" data-id="{{item._id}}" data-enabled="{{item.enabled}}">
+            {{item.enabled ? '下架' : '上架'}}
+          </view>
+        </view>
+      </view>
+      <view class="empty-text" wx:if="{{dishList.length == 0}}">暂无菜品，点击上方新增</view>
+    </scroll-view>
+
+    <!-- 编辑弹窗 -->
+    <view class="modal-overlay {{showForm ? 'show' : ''}}" bindtap="onCloseForm">
+      <scroll-view class="form-panel" catchtap="noop" scroll-y="{{true}}">
+        <text class="form-title">{{editMode == 'edit' ? '编辑菜品' : '新增菜品'}}</text>
+
+        <view class="form-group">
+          <text class="form-label">菜品名称 *</text>
+          <input class="form-input" value="{{form.name}}" bindinput="onFormInput" data-key="name" placeholder="输入名称" />
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">所属分类 *</text>
+          <picker range="{{categories}}" range-key="name" value="{{selectedCategoryIndex}}" bindchange="onCategoryChange">
+            <view class="picker-box">{{categories[selectedCategoryIndex] ? categories[selectedCategoryIndex].name : '选择分类'}}</view>
+          </picker>
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">菜品图片</text>
+          <button class="upload-btn" bindtap="onUploadImage">选择图片</button>
+          <image class="preview-img" src="{{form.image}}" mode="aspectFill" wx:if="{{form.image}}"></image>
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">简介</text>
+          <input class="form-input" value="{{form.description}}" bindinput="onFormInput" data-key="description" placeholder="简短介绍" />
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">价格</text>
+          <input class="form-input" value="{{form.price}}" bindinput="onFormInput" data-key="price" placeholder="0" type="digit" />
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">标签（逗号分隔）</text>
+          <input class="form-input" value="{{form.tagsText}}" bindinput="onFormTags" placeholder="推荐, 招牌" />
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">主要配料</text>
+          <textarea class="form-textarea" value="{{form.mainIngredients}}" bindinput="onFormInput" data-key="mainIngredients" placeholder="主要配料描述"></textarea>
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">做法步骤</text>
+          <textarea class="form-textarea" value="{{form.steps}}" bindinput="onFormInput" data-key="steps" placeholder="做法步骤描述"></textarea>
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">口味建议</text>
+          <input class="form-input" value="{{form.flavorSuggestion}}" bindinput="onFormInput" data-key="flavorSuggestion" placeholder="口味建议" />
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">排序值（越小越靠前）</text>
+          <input class="form-input" value="{{form.sort}}" bindinput="onFormInput" data-key="sort" placeholder="0" type="number" />
+        </view>
+
+        <view class="form-group switch-group">
+          <text class="form-label">是否上架</text>
+          <switch checked="{{form.enabled != false}}" bindchange="onFormEnabled" />
+        </view>
+
+        <view class="form-btns">
+          <button class="btn-cancel" bindtap="onCloseForm">取消</button>
+          <button class="btn-save" bindtap="onSaveDish">保存</button>
+        </view>
+      </scroll-view>
+    </view>
+  </block>
+</view>

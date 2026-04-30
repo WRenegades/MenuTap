@@ -1,0 +1,23 @@
+<view class="success-page">
+  <view class="success-card">
+    <text class="success-emoji">🥰</text>
+    <text class="success-title">收到啦，马上安排～</text>
+    <text class="success-subtitle">正在为你精心准备，请稍等哦</text>
+
+    <view class="order-info">
+      <text class="info-label">订单号</text>
+      <text class="info-value">{{orderNo}}</text>
+    </view>
+
+    <view class="subscribe-section" wx:if="{{!subscribed}}">
+      <text class="subscribe-hint">💬 开启订单通知，随时掌握进度</text>
+      <button class="subscribe-btn" bindtap="onSubscribe">订阅通知</button>
+    </view>
+    <text class="subscribed-text" wx:else>✅ 已订阅订单通知</text>
+
+    <view class="btn-group">
+      <button class="btn-primary" bindtap="onViewOrder">查看订单</button>
+      <button class="btn-secondary" bindtap="onBackMenu">返回菜单</button>
+    </view>
+  </view>
+</view>

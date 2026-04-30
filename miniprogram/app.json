@@ -1,0 +1,20 @@
+{
+  "pages": [
+    "pages/menu/index",
+    "pages/order/success/index",
+    "pages/order/detail/index",
+    "pages/admin/index",
+    "pages/admin/dishes/index",
+    "pages/admin/categories/index"
+  ],
+  "window": {
+    "backgroundColor": "#FFF5F5",
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#FF6B81",
+    "navigationBarTitleText": "培培的爱欣食谱",
+    "navigationBarTextStyle": "white"
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}
